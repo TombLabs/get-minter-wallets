@@ -10,6 +10,9 @@ const connection = new Connection(rpc || 'https://rpc.ankr.com/solana', 'confirm
 const metaplex = Metaplex.make(connection)
 
 const creatorPub = new PublicKey(creator)
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function getWallets(){
     const results = await connection.getSignaturesForAddress(creatorPub)
@@ -22,14 +25,17 @@ async function getWallets(){
     if (sigArr.length === results.length){
         const parsedTxs = await connection.getParsedTransactions(sigArr)
         let holders: Array<string> = []
-        parsedTxs.forEach((tx, i) =>{
-            if (tx?.meta?.postTokenBalances?.[0]?.owner){
-                holders.push(tx?.meta?.postTokenBalances[0].owner)
+        for (let i = 0; i < parsedTxs.length; i++){
+            
+            if (parsedTxs?.[i]?.meta?.postTokenBalances?.[0].owner){
+                holders.push(parsedTxs?.[i]?.meta?.postTokenBalances?.[0].owner!)
+                console.log(`Saving: ${parsedTxs?.[i]?.meta?.postTokenBalances?.[0].owner!}`)
             }
             if (i === parsedTxs.length - 1){
                 createJson(holders)
             }
-        })
+await sleep(300)
+        }
 
         
     }
